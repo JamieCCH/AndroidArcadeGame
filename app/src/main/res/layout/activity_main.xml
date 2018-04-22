@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,64 +8,75 @@
     android:orientation="horizontal"
     tools:context="ca.georgebrown.game2011.arcadegame.MainActivity">
 
-    <ImageButton
-        android:id="@+id/exitButton"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@android:color/transparent"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/button_exitgame"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.853"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ImageButton
-        android:id="@+id/creditButton"
+    <View
+        android:layout_height="match_parent"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@android:color/transparent"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/button_credit"
-        app:layout_constraintBottom_toTopOf="@+id/exitButton"
-        app:layout_constraintEnd_toEndOf="@+id/exitButton"
-        app:layout_constraintStart_toStartOf="@+id/exitButton" />
+        android:layout_weight="2" />
 
-    <ImageButton
-        android:id="@+id/tutorialButton"
+    <LinearLayout
+        android:layout_weight="1"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@android:color/transparent"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/button_tutorial"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        app:layout_constraintBottom_toTopOf="@+id/creditButton"
-        app:layout_constraintEnd_toEndOf="@+id/creditButton"
-        app:layout_constraintStart_toStartOf="@+id/creditButton" />
+        <View android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_weight="1.5"
+            />
 
-    <ImageButton
-        android:id="@+id/startButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:adjustViewBounds="true"
-        android:backgroundTint="@android:color/transparent"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/button_startgame"
-        app:layout_constraintBottom_toTopOf="@+id/tutorialButton"
-        app:layout_constraintEnd_toEndOf="@+id/tutorialButton"
-        app:layout_constraintStart_toStartOf="@+id/tutorialButton"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
-</android.support.constraint.ConstraintLayout>
+        <ImageButton
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:id="@+id/startButton"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/button_startgame"  />
+
+        <ImageButton
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:id="@+id/tutorialButton"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/button_tutorial" />
+        <ImageButton
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:id="@+id/creditButton"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/button_credit" />
+
+        <ImageButton
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:id="@+id/exitButton"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:backgroundTint="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/button_exitgame" />
+
+        <View android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5"/>
+
+</LinearLayout>
