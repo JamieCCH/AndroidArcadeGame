@@ -2,10 +2,12 @@ package ca.georgebrown.game2011.arcadegame.GameView;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,6 +23,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import ca.georgebrown.game2011.arcadegame.Activities.GameFinishedActivity;
 import ca.georgebrown.game2011.arcadegame.GameModels.Bullet;
 import ca.georgebrown.game2011.arcadegame.GameModels.Enemy;
 import ca.georgebrown.game2011.arcadegame.GameModels.Player;
@@ -42,7 +46,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     int fps;
 
     private Canvas canvas;
-    private Sprite background, scoreBgr, timerBgr, heartFull, heartEmpty, bombFull, bombEmpty, bombButton, pauseButton;
+    private Sprite background, scoreBgr, timerBgr, timerOverlay, bombButton, pauseButton;
     private Player player;
 
 
@@ -61,6 +65,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     ArrayList<Enemy> enemies = new ArrayList<>();
 
     int enemySpeedBoost = 0;
+    int score = 0;
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -108,6 +113,9 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         Bitmap timerBgrBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_timer);
         Position timerPosition = new Position(screenWidth/4 + 20,20);
         timerBgr = new Sprite(timerBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
+
+        Bitmap timerOverlayBgrBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_timer_overlay);
+        timerOverlay = new Sprite(timerOverlayBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
 
 
         //Layer 2 HUD Elements
@@ -257,6 +265,17 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     int enemyGap = 0;
     private void update(){
 
+        timerOverlay.getIconRect().right -= 2;
+        if(timerOverlay.getIconRect().right <= timerOverlay.getIconRect().left && isGamePlaying){
+            isGamePlaying = false;
+            Intent gameFinishedIntent = new Intent(getContext(), GameFinishedActivity.class);
+            gameFinishedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            gameFinishedIntent.putExtra("didWin",true);
+            gameFinishedIntent.putExtra("score",Integer.toString(score));
+            getContext().startActivity(gameFinishedIntent);
+            return;
+        }
+
         Date date = new Date();
 
         bulletGap++;
@@ -325,6 +344,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             background.drawIconOnCanvas(canvas);
             scoreBgr.drawIconOnCanvas(canvas);
             timerBgr.drawIconOnCanvas(canvas);
+            timerOverlay.drawIconOnCanvas(canvas);
 
             for (Sprite icon : lifeLeftIcons) {
                 icon.drawIconOnCanvas(canvas);
@@ -346,6 +366,11 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             for(Enemy enemy : enemies){
                 enemy.drawEnemyOnCanvas(canvas);
             }
+
+            Paint paint = new Paint();
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(40);
+            canvas.drawText(Integer.toString(score), 100, scoreBgr.getIconRect().bottom - 20, paint);
 
             ourHolder.unlockCanvasAndPost(canvas);
 
@@ -417,6 +442,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
                         && top < enemy.getEnemyRect().bottom){
 
                     enemyIterator.remove();
+                    score+=10;
                     shouldRemoveBullet = true;
                     break;
                 }
@@ -465,8 +491,11 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             resetGame();
         }
         else{
-            //TODO: GAME OVER HERE
-            pause();
+            Intent gameFinishedIntent = new Intent(getContext(), GameFinishedActivity.class);
+            gameFinishedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            gameFinishedIntent.putExtra("didWin",false);
+            gameFinishedIntent.putExtra("score",Integer.toString(score));
+            getContext().startActivity(gameFinishedIntent);
         }
     }
 

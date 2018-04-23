@@ -48,4 +48,11 @@ public class Sprite {
         canvas.drawBitmap(iconImage,null,iconRect,null);
     }
 
+    public void setIconRect(Rect iconRect) {
+        this.iconRect = iconRect;
+    }
+
+    public Position getIconPosition() {
+        return iconPosition;
+    }
 }

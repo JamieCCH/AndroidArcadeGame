@@ -25,46 +25,38 @@
             android:layout_weight="1.2" />
 
         <ImageButton
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
             android:id="@+id/startButton"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:backgroundTint="@android:color/transparent"
-            android:scaleType="fitXY"
+            android:scaleType="fitCenter"
             android:src="@mipmap/button_startgame"  />
 
         <ImageButton
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
             android:id="@+id/tutorialButton"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:backgroundTint="@android:color/transparent"
-            android:scaleType="fitXY"
+            android:scaleType="fitCenter"
             android:src="@mipmap/button_tutorial" />
         <ImageButton
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
             android:id="@+id/creditButton"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:backgroundTint="@android:color/transparent"
-            android:scaleType="fitXY"
+            android:scaleType="fitCenter"
             android:src="@mipmap/button_credit" />
 
         <ImageButton
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
             android:id="@+id/exitButton"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:backgroundTint="@android:color/transparent"
-            android:scaleType="fitXY"
+            android:scaleType="fitCenter"
             android:src="@mipmap/button_exitgame" />
 
         <View android:layout_height="0dp"

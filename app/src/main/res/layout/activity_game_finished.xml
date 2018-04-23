@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/screen_win">
+
+    <ImageView
+        android:id="@+id/game_finished_image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.3"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.7"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_gravity="end"
+                android:scaleType="fitCenter"
+                android:layout_height="match_parent"
+                android:src="@mipmap/icon_final_score"/>
+            <TextView
+                android:id="@+id/score_text_view"
+                android:gravity="center|start"
+                android:layout_width="0dp"
+                android:textSize="60sp"
+                android:fontFamily="@font/anabelle"
+                android:layout_height="match_parent"
+                android:text="560"
+                android:textColor="@color/white"
+                android:layout_weight="2"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.8"
+            android:orientation="horizontal">
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"/>
+
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:src="@mipmap/button_play_again"
+                android:scaleType="fitCenter"
+                android:background="#00000000"
+                android:onClick="onPlayAgainClicked"
+                android:layout_height="match_parent" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent"/>
+
+            <ImageButton
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:src="@mipmap/button_exitgame"
+                android:onClick="onExitClicked"
+                android:scaleType="fitCenter"
+                android:background="#00000000"
+                android:layout_height="match_parent" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"/>
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
