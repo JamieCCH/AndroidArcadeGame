@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -58,6 +59,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     ArrayList<Bullet> bullets = new ArrayList<>();
     ArrayList<Enemy> enemies = new ArrayList<>();
+
+    int enemySpeedBoost = 0;
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -196,9 +199,9 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         Enemy enemy;
         int randomNumber = rand.nextInt();
         if (randomNumber % 2 == 0){
-            enemy = new Enemy(enemyType1,enemyPosition,10);
+            enemy = new Enemy(enemyType1,enemyPosition,10 + enemySpeedBoost);
         }else{
-            enemy = new Enemy(enemyType2,enemyPosition,15);
+            enemy = new Enemy(enemyType2,enemyPosition,15 + enemySpeedBoost);
         }
 
         enemies.add(enemy);
@@ -261,6 +264,12 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         long timeDeltaMiliSeconds = date.getTime() - lastUpdateTime;
         int timeDelta = (int) TimeUnit.MILLISECONDS.toSeconds(timeDeltaMiliSeconds);
 
+        //Increase speed of enemies every 15 seconds
+        if(timeDelta % 15 == 0){
+            enemySpeedBoost += 1;
+        }
+
+        //Generate bullets every few milliseconds
         if (timeDelta % bulletShootInterval == 0 && bulletGap % 10 == 0){
 
 
@@ -361,6 +370,32 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         lastFrameTime = System.currentTimeMillis();
     }
 
+    private void checkPlayerCollisionWithEnemies(){
+
+        for (Iterator<Enemy> enemyIterator = enemies.iterator(); enemyIterator.hasNext(); ) {
+            Enemy enemy = enemyIterator.next();
+
+            int left = player.getPlayerRect().left;
+            int top = player.getPlayerRect().top;
+                int right = player.getPlayerRect().right;
+                int bottom = player.getPlayerRect().bottom;
+
+            if ((left > enemy.getEnemyRect().left
+                    && left < enemy.getEnemyRect().right
+                    && top > enemy.getEnemyRect().top
+                    && top < enemy.getEnemyRect().bottom)
+                    || (right > enemy.getEnemyRect().left
+                    && right < enemy.getEnemyRect().right
+                    && bottom > enemy.getEnemyRect().top
+                    && bottom < enemy.getEnemyRect().bottom)){
+
+                takeLife();
+                break;
+            }
+        }
+
+    }
+
     private void checkBulletCollisionWithEnemies(){
 
         for (Iterator<Bullet> iterator = bullets.iterator(); iterator.hasNext(); ) {
@@ -400,6 +435,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     @Override
     public void run() {
         while (isGamePlaying){
+            checkPlayerCollisionWithEnemies();
             checkBulletCollisionWithEnemies();
             update();
             draw();
@@ -426,6 +462,11 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             livesLeft--;
             int lastIndex = lifeLeftIcons.size() - 1;
             lifeLeftIcons.remove(lastIndex);
+            resetGame();
+        }
+        else{
+            //TODO: GAME OVER HERE
+            pause();
         }
     }
 
@@ -501,6 +542,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     public void resetGame(){
         bullets = new ArrayList<>();
         enemies = new ArrayList<>();
+        lifeLeftIcons = new ArrayList<>();
+        bombsLeftIcons = new ArrayList<>();
         setupGameCanvasView();
     }
 

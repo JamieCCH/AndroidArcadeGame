@@ -88,4 +88,8 @@ public class Player {
     public Rect getBottomMinionRect() {
         return bottomMinionRect;
     }
+
+    public Rect getPlayerRect() {
+        return playerRect;
+    }
 }
