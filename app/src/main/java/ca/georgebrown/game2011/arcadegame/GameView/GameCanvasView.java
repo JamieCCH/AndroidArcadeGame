@@ -16,9 +16,11 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import ca.georgebrown.game2011.arcadegame.GameModels.Bullet;
+import ca.georgebrown.game2011.arcadegame.GameModels.Enemy;
 import ca.georgebrown.game2011.arcadegame.GameModels.Player;
 import ca.georgebrown.game2011.arcadegame.GameModels.Position;
 import ca.georgebrown.game2011.arcadegame.R;
@@ -55,6 +57,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     ArrayList<Sprite> bombsLeftIcons = new ArrayList<>();
 
     ArrayList<Bullet> bullets = new ArrayList<>();
+    ArrayList<Enemy> enemies = new ArrayList<>();
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -150,6 +153,18 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     }
 
+    private boolean isEnemyOutsideTheScreen(Enemy enemy){
+
+        boolean result = false;
+
+        if(enemy.getEnemyRect().left < 0){
+            result = true;
+        }
+
+        return result;
+
+    }
+
     private boolean isBulletOutsideTheScreen(Bullet bullet){
 
         boolean result = false;
@@ -160,6 +175,33 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
         return result;
 
+    }
+
+    private void generateEnemyRandomly(){
+
+        Bitmap enemyType1 = BitmapFactory.decodeResource(getResources(),R.mipmap.enemy_minion_17);
+        Bitmap enemyType2 = BitmapFactory.decodeResource(getResources(),R.mipmap.enemy_minion_18);
+        Random rand = new Random();
+        int upperBound = (screenHeight - player.playerHeight);
+        int lowerBound = hudAreaHeight + player.topMinionHeight + 20;
+        int randomHeight = lowerBound + rand.nextInt(upperBound);
+
+        //Prevent enemy to spawn out of screen bounds
+        if(randomHeight > screenHeight - player.playerHeight){
+            randomHeight = screenHeight - player.playerHeight;
+        }
+        
+        Position enemyPosition = new Position(screenWidth + 100,randomHeight);
+
+        Enemy enemy;
+        int randomNumber = rand.nextInt();
+        if (randomNumber % 2 == 0){
+            enemy = new Enemy(enemyType1,enemyPosition,10);
+        }else{
+            enemy = new Enemy(enemyType2,enemyPosition,15);
+        }
+
+        enemies.add(enemy);
     }
 
     private Bullet[] generateBullets() {
@@ -188,10 +230,13 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         bulletPosition = new Position(minionRect.left+player.playerWidth,minionRect.top - 50);
         result[3] = new Bullet(bulletBMP,bulletPosition,25,40);
 
+//        result[2].bulletSpeed = 30;
+//        result[3].bulletSpeed = 30;
+
         return result;
     }
 
-    private boolean isBulletAlreadyOnScreen(int bulletId){
+    private boolean isBulletAlreadyOnScreen(String bulletId){
 
         boolean result = false;
 
@@ -205,22 +250,32 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         return result;
 
     }
-
+    int bulletGap = 0;
+    int enemyGap = 0;
     private void update(){
 
-
         Date date = new Date();
+
+        bulletGap++;
 
         long timeDeltaMiliSeconds = date.getTime() - lastUpdateTime;
         int timeDelta = (int) TimeUnit.MILLISECONDS.toSeconds(timeDeltaMiliSeconds);
 
-        if (timeDelta % bulletShootInterval == 0 ){
+        if (timeDelta % bulletShootInterval == 0 && bulletGap % 3 == 0){
 
 
-            if (!isBulletAlreadyOnScreen(timeDelta)){
+            if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta))){
                 Bullet[] bulletsArray = generateBullets();
                 for(Bullet bullet : bulletsArray){
-                    bullet.bulletId = timeDelta;
+                    bullet.bulletId = Integer.toString(timeDelta);
+                    bullets.add(bullet);
+                }
+
+            }
+            else if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta)+Integer.toString(bulletGap))){
+                Bullet[] bulletsArray = generateBullets();
+                for(Bullet bullet : bulletsArray){
+                    bullet.bulletId = Integer.toString(timeDelta)+Integer.toString(bulletGap);
                     bullets.add(bullet);
                 }
 
@@ -228,11 +283,26 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
         }
 
+        enemyGap += 3;
+        if (timeDelta % 2 == 0 && enemyGap % 4 == 0){
+            generateEnemyRandomly();
+        }
 
+        //Move Bullets
         for (Iterator<Bullet> iterator = bullets.iterator(); iterator.hasNext(); ) {
             Bullet bullet = iterator.next();
             bullet.moveForward();
             if (isBulletOutsideTheScreen(bullet)){
+                iterator.remove();
+            }
+        }
+
+        //Move Enemies
+
+        for (Iterator<Enemy> iterator = enemies.iterator(); iterator.hasNext(); ) {
+            Enemy enemy = iterator.next();
+            enemy.moveEnemy();
+            if (isEnemyOutsideTheScreen(enemy)){
                 iterator.remove();
             }
         }
@@ -262,6 +332,10 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
             for(Bullet bullet : bullets){
                 bullet.drawIconOnCanvas(canvas);
+            }
+
+            for(Enemy enemy : enemies){
+                enemy.drawEnemyOnCanvas(canvas);
             }
 
             ourHolder.unlockCanvasAndPost(canvas);

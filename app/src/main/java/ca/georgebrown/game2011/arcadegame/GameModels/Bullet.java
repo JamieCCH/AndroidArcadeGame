@@ -9,8 +9,8 @@ import android.graphics.Rect;
 
 public class Bullet extends Sprite {
 
-    public int bulletId;
-    public int bulletSpeed = 20;
+    public String bulletId;
+    public int bulletSpeed = 30;
 
     public Bullet(Bitmap iconImage, Position iconPosition, int iconHeight, int iconWidth) {
         super(iconImage, iconPosition, iconHeight, iconWidth);
