@@ -261,7 +261,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         long timeDeltaMiliSeconds = date.getTime() - lastUpdateTime;
         int timeDelta = (int) TimeUnit.MILLISECONDS.toSeconds(timeDeltaMiliSeconds);
 
-        if (timeDelta % bulletShootInterval == 0 && bulletGap % 3 == 0){
+        if (timeDelta % bulletShootInterval == 0 && bulletGap % 10 == 0){
 
 
             if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta))){
@@ -361,9 +361,46 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         lastFrameTime = System.currentTimeMillis();
     }
 
+    private void checkBulletCollisionWithEnemies(){
+
+        for (Iterator<Bullet> iterator = bullets.iterator(); iterator.hasNext(); ) {
+
+            Bullet bullet = iterator.next();
+
+            boolean shouldRemoveBullet = false;
+            for (Iterator<Enemy> enemyIterator = enemies.iterator(); enemyIterator.hasNext(); ) {
+                Enemy enemy = enemyIterator.next();
+
+                int left = bullet.getIconRect().left;
+                int top = bullet.getIconRect().top;
+//                int right = bullet.getIconRect().right;
+//                int bottom = bullet.getIconRect().bottom;
+
+                if (left > enemy.getEnemyRect().left
+                        && left < enemy.getEnemyRect().right
+                        && top > enemy.getEnemyRect().top
+                        && top < enemy.getEnemyRect().bottom){
+
+                    enemyIterator.remove();
+                    shouldRemoveBullet = true;
+                    break;
+                }
+            }
+
+            if (shouldRemoveBullet){
+                iterator.remove();
+            }
+
+        }
+
+
+
+    }
+
     @Override
     public void run() {
         while (isGamePlaying){
+            checkBulletCollisionWithEnemies();
             update();
             draw();
             controlFPS();
