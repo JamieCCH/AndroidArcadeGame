@@ -13,13 +13,24 @@ import ca.georgebrown.game2011.arcadegame.R;
 
 public class GamePlayActivity extends Activity {
 
+    GameCanvasView gameCanvas;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
-        GameCanvasView gameCanvas = findViewById(R.id.gameCanvas);
+        gameCanvas = findViewById(R.id.gameCanvas);
         gameCanvas.resume();
-//        setContentView(new GameCanvasView(this));
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        gameCanvas.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        gameCanvas.resume();
+    }
 }
