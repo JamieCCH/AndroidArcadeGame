@@ -36,6 +36,10 @@ public class Sprite {
 
     }
 
+    public Rect getIconRect() {
+        return iconRect;
+    }
+
     public void setIconImage(Bitmap iconImage) {
         this.iconImage = iconImage;
     }

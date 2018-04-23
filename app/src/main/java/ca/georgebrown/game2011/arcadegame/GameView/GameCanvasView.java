@@ -190,7 +190,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         if(randomHeight > screenHeight - player.playerHeight){
             randomHeight = screenHeight - player.playerHeight;
         }
-        
+
         Position enemyPosition = new Position(screenWidth + 100,randomHeight);
 
         Enemy enemy;
@@ -398,9 +398,32 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         int x = (int) event.getX();
         int y = (int) event.getY();
 
-        this.updatePlayerPositionTo(x,y);
+        if (event.getAction()==MotionEvent.ACTION_DOWN) {
 
-        return true;
+            if (x > pauseButton.getIconRect().left
+                    && x < pauseButton.getIconRect().right
+                    && y > pauseButton.getIconRect().top
+                    && y < pauseButton.getIconRect().bottom){
+
+                if(isGamePlaying) {
+                    pause();
+                }else{
+                    resume();
+                }
+
+            }
+
+            return true;
+        }
+
+        if (event.getAction()==MotionEvent.ACTION_MOVE){
+
+            this.updatePlayerPositionTo(x,y);
+            return true;
+
+        }
+
+        return false;
     }
 
     public void updatePlayerPositionTo(int x, int y){
@@ -418,6 +441,12 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         }
 
         player.setPlayerPosition(new Position(x,y));
+    }
+
+    public void resetGame(){
+        bullets = new ArrayList<>();
+        enemies = new ArrayList<>();
+        setupGameCanvasView();
     }
 
 
