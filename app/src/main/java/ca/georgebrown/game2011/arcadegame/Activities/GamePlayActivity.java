@@ -19,7 +19,7 @@ public class GamePlayActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
         gameCanvas = findViewById(R.id.gameCanvas);
-        gameCanvas.resume();
+//        gameCanvas.resume();
     }
 
     @Override
