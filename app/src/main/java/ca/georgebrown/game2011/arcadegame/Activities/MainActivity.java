@@ -48,16 +48,22 @@ public class MainActivity extends Activity {
 
 
     private void startPlay() {
+
         Intent intent = new Intent(this, GamePlayActivity.class);
         startActivity(intent);
     }
 
     private void tutorial() {
 
+        Intent intent = new Intent(this, Tutorial.class);
+        startActivity(intent);
     }
 
 
     private void credit() {
+
+        Intent intent = new Intent(this, Credit.class);
+        startActivity(intent);
     }
 
 
