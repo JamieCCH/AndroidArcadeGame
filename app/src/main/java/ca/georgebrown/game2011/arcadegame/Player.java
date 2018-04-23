@@ -14,8 +14,8 @@ public class Player {
     private Bitmap playerImage;
     private Bitmap playerMinionImage;
 
-    private int playerHeight = 120;
-    private int playerWidth = 150;
+    private int playerImageHeight = 120;
+    private int playerImageWidth = 150;
 
     private int minionHeight = 30;
     private int minionWidth = 45;
@@ -24,6 +24,10 @@ public class Player {
     private Rect topMinionRect;
     private Rect bottomMinionRect;
 
+    public int playerHeight = 0;
+    public int topMinionHeight;
+    public int playerWidth = playerImageWidth;
+
     Player(Bitmap playerImage,Position position,Bitmap playerMinionImage){
         this.playerImage = playerImage;
         this.playerMinionImage = playerMinionImage;
@@ -31,15 +35,20 @@ public class Player {
         setPlayerRect();
         setTopMinionRect();
         setBottomMinionRect();
+
+        playerHeight += playerImageHeight;
+        playerHeight += bottomMinionRect.bottom - bottomMinionRect.top;
+        topMinionHeight = topMinionRect.bottom - topMinionRect.top;
+        playerHeight += topMinionHeight;
+
     }
 
     private void setPlayerRect() {
         int playerLeft = playerPosition.getLeftPosition();
         int playerTop = playerPosition.getTopPosition();
-        int playerRight = playerLeft + playerWidth;
-        int playerBottom = playerTop + playerHeight;
+        int playerRight = playerLeft + playerImageWidth;
+        int playerBottom = playerTop + playerImageHeight;
         playerRect = new Rect(playerLeft,playerTop,playerRight,playerBottom);
-
     }
 
     private void setBottomMinionRect() {
@@ -48,6 +57,7 @@ public class Player {
         int minionRight = minionLeft + minionWidth;
         int minionBottom = minionTop + minionHeight;
         bottomMinionRect = new Rect(minionLeft,minionTop,minionRight,minionBottom);
+
     }
 
     private void setTopMinionRect() {
@@ -58,8 +68,11 @@ public class Player {
         topMinionRect = new Rect(minionLeft,minionTop,minionRight,minionBottom);
     }
 
-    public Position getPlayerPosition() {
-        return playerPosition;
+    public void setPlayerPosition(Position playerPosition) {
+        this.playerPosition = playerPosition;
+        setPlayerRect();
+        setTopMinionRect();
+        setBottomMinionRect();
     }
 
     public void drawPlayerOnCanvas(Canvas canvas){
