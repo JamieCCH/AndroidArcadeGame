@@ -1,8 +1,11 @@
-package ca.georgebrown.game2011.arcadegame;
+package ca.georgebrown.game2011.arcadegame.Activities;
 
 
 import android.app.Activity;
 import android.os.Bundle;
+
+import ca.georgebrown.game2011.arcadegame.GameView.GameCanvasView;
+import ca.georgebrown.game2011.arcadegame.R;
 
 /**
  * Created by jamie on 08/04/2018.

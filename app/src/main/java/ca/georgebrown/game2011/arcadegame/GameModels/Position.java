@@ -1,4 +1,4 @@
-package ca.georgebrown.game2011.arcadegame;
+package ca.georgebrown.game2011.arcadegame.GameModels;
 
 /**
  * Created by singh on 2018-04-22.

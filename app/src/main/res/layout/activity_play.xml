@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="horizontal">
 
-    <ca.georgebrown.game2011.arcadegame.GameCanvasView
+    <ca.georgebrown.game2011.arcadegame.GameView.GameCanvasView
         android:id="@+id/gameCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

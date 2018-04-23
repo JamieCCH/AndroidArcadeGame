@@ -1,4 +1,4 @@
-package ca.georgebrown.game2011.arcadegame;
+package ca.georgebrown.game2011.arcadegame.GameModels;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -28,7 +28,7 @@ public class Player {
     public int topMinionHeight;
     public int playerWidth = playerImageWidth;
 
-    Player(Bitmap playerImage,Position position,Bitmap playerMinionImage){
+    public Player(Bitmap playerImage, Position position, Bitmap playerMinionImage){
         this.playerImage = playerImage;
         this.playerMinionImage = playerMinionImage;
         this.playerPosition = position;

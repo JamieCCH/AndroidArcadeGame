@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@mipmap/background_menu"
     android:orientation="horizontal"
-    tools:context="ca.georgebrown.game2011.arcadegame.MainActivity">
+    tools:context="ca.georgebrown.game2011.arcadegame.Activities.MainActivity">
 
     <View
         android:layout_height="match_parent"

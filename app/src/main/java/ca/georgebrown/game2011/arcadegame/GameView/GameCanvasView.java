@@ -1,4 +1,4 @@
-package ca.georgebrown.game2011.arcadegame;
+package ca.georgebrown.game2011.arcadegame.GameView;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,32 +6,41 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import ca.georgebrown.game2011.arcadegame.GameModels.Bullet;
+import ca.georgebrown.game2011.arcadegame.GameModels.Player;
+import ca.georgebrown.game2011.arcadegame.GameModels.Position;
+import ca.georgebrown.game2011.arcadegame.R;
+import ca.georgebrown.game2011.arcadegame.GameModels.Sprite;
 
 /**
  * Created by jamie on 08/04/2018.
  */
 
-class GameCanvasView extends SurfaceView implements Runnable {
+public class GameCanvasView extends SurfaceView implements Runnable {
 
     Thread ourThread = null;
     SurfaceHolder ourHolder;
     boolean isGamePlaying;
 
     long lastFrameTime;
+    long lastUpdateTime;
     int fps;
 
     private Canvas canvas;
-    private HUDElement background, scoreBgr, timerBgr, heartFull, heartEmpty, bombFull, bombEmpty, bombButton, pauseButton;
+    private Sprite background, scoreBgr, timerBgr, heartFull, heartEmpty, bombFull, bombEmpty, bombButton, pauseButton;
     private Player player;
 
 
@@ -41,9 +50,14 @@ class GameCanvasView extends SurfaceView implements Runnable {
 
     int livesLeft = 3;
     int bombsLeft = 5;
+    int bulletShootInterval = 3;
 
-    ArrayList<HUDElement> lifeLeftIcons = new ArrayList<>();
-    ArrayList<HUDElement> bombsLeftIcons = new ArrayList<>();
+    boolean canPlayerShoot = false;
+
+    ArrayList<Sprite> lifeLeftIcons = new ArrayList<>();
+    ArrayList<Sprite> bombsLeftIcons = new ArrayList<>();
+
+    ArrayList<Bullet> bullets = new ArrayList<>();
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -79,18 +93,18 @@ class GameCanvasView extends SurfaceView implements Runnable {
     private void initializeHUDElementsVariables() {
 
         //Background
-        Bitmap backgroundBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.background_gameplay);
+        Bitmap backgroundBMP = BitmapFactory.decodeResource(getResources(), R.mipmap.background_gameplay);
         Position backgroundPosition = new Position(0,0);
-        background = new HUDElement(backgroundBMP,backgroundPosition,screenHeight,screenWidth);
+        background = new Sprite(backgroundBMP,backgroundPosition,screenHeight,screenWidth);
 
         //Layer 1 HUD Elements
         Bitmap scoreBgrBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_score);
         Position scorePosition = new Position(10,10);
-        scoreBgr = new HUDElement(scoreBgrBMP,scorePosition,hudAreaHeight/3 - 10,screenWidth/4);
+        scoreBgr = new Sprite(scoreBgrBMP,scorePosition,hudAreaHeight/3 - 10,screenWidth/4);
 
         Bitmap timerBgrBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_timer);
         Position timerPosition = new Position(screenWidth/4 + 20,20);
-        timerBgr = new HUDElement(timerBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
+        timerBgr = new Sprite(timerBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
 
 
         //Layer 2 HUD Elements
@@ -99,7 +113,7 @@ class GameCanvasView extends SurfaceView implements Runnable {
         for (int i = 0; i < livesLeft; i++){
             int lifeIconWidthHeight = hudAreaHeight/3;
             Position lifeIconPosition = new Position(scorePosition.getLeftPosition()+(i*lifeIconWidthHeight)+10,hudAreaHeight/3);
-            HUDElement lifeIcon = new HUDElement(heartFullBMP,lifeIconPosition,lifeIconWidthHeight,lifeIconWidthHeight);
+            Sprite lifeIcon = new Sprite(heartFullBMP,lifeIconPosition,lifeIconWidthHeight,lifeIconWidthHeight);
             lifeLeftIcons.add(lifeIcon);
         }
 
@@ -108,18 +122,19 @@ class GameCanvasView extends SurfaceView implements Runnable {
         for (int i = 0; i < bombsLeft; i++){
             int bombIconWidthHeight = hudAreaHeight/3;
             Position bombIconPosition = new Position((screenWidth/4)+(i*bombIconWidthHeight) + 30,hudAreaHeight/3);
-            HUDElement bombIcon = new HUDElement(bombFullBMP,bombIconPosition,bombIconWidthHeight,bombIconWidthHeight);
+            Sprite bombIcon = new Sprite(bombFullBMP,bombIconPosition,bombIconWidthHeight,bombIconWidthHeight);
             bombsLeftIcons.add(bombIcon);
         }
 
         //Layer 3 HUD Elements
         Bitmap pauseButtonBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.button_pause);
         Position pauseButtonPosition = new Position(20,2*hudAreaHeight/3);
-        pauseButton = new HUDElement(pauseButtonBMP,pauseButtonPosition,hudAreaHeight/3,hudAreaHeight/3);
+        pauseButton = new Sprite(pauseButtonBMP,pauseButtonPosition,hudAreaHeight/3,hudAreaHeight/3);
 
         Bitmap bombButtonBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.button_bomb);
         Position bombButtonPosition = new Position(hudAreaHeight/3+30,2*hudAreaHeight/3);
-        bombButton = new HUDElement(bombButtonBMP,bombButtonPosition,hudAreaHeight/3,hudAreaHeight/3);
+        bombButton = new Sprite(bombButtonBMP,bombButtonPosition,hudAreaHeight/3,hudAreaHeight/3);
+
 
     }
 
@@ -138,6 +153,75 @@ class GameCanvasView extends SurfaceView implements Runnable {
 
     }
 
+    private boolean isBulletOutsideTheScreen(Bullet bullet){
+
+        boolean result = false;
+
+        if(bullet.getIconRect().left > screenWidth){
+            result = true;
+        }
+
+        return result;
+
+    }
+
+    private Bullet generateBullet() {
+
+        Bullet result;
+
+        Bitmap bulletBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.player_bullet_03);
+        Position bulletPosition = new Position(30,screenHeight/2);
+
+        result = new Bullet(bulletBMP,bulletPosition,25,40);
+
+        return result;
+    }
+
+    private boolean isBulletAlreadyOnScreen(int bulletId){
+
+        boolean result = false;
+
+        for(Bullet bullet : bullets){
+            if (bullet.bulletId == bulletId){
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+
+    }
+
+    private void update(){
+
+
+        Date date = new Date();
+
+        long timeDeltaMiliSeconds = date.getTime() - lastUpdateTime;
+        int timeDelta = (int) TimeUnit.MILLISECONDS.toSeconds(timeDeltaMiliSeconds);
+
+        if (timeDelta % bulletShootInterval == 0 ){
+
+
+            if (!isBulletAlreadyOnScreen(timeDelta)){
+                Bullet bullet = generateBullet();
+                bullet.bulletId = timeDelta;
+                bullets.add(bullet);
+            }
+
+        }
+
+
+        for (Iterator<Bullet> iterator = bullets.iterator(); iterator.hasNext(); ) {
+            Bullet bullet = iterator.next();
+            bullet.moveForward();
+            if (isBulletOutsideTheScreen(bullet)){
+                iterator.remove();
+            }
+        }
+
+    }
+
     private void draw(){
         if (ourHolder.getSurface().isValid()) {
             canvas = ourHolder.lockCanvas();
@@ -146,11 +230,11 @@ class GameCanvasView extends SurfaceView implements Runnable {
             scoreBgr.drawIconOnCanvas(canvas);
             timerBgr.drawIconOnCanvas(canvas);
 
-            for (HUDElement icon : lifeLeftIcons) {
+            for (Sprite icon : lifeLeftIcons) {
                 icon.drawIconOnCanvas(canvas);
             }
 
-            for (HUDElement icon : bombsLeftIcons) {
+            for (Sprite icon : bombsLeftIcons) {
                 icon.drawIconOnCanvas(canvas);
             }
 
@@ -158,6 +242,10 @@ class GameCanvasView extends SurfaceView implements Runnable {
             bombButton.drawIconOnCanvas(canvas);
 
             player.drawPlayerOnCanvas(canvas);
+
+            for(Bullet bullet : bullets){
+                bullet.drawIconOnCanvas(canvas);
+            }
 
             ourHolder.unlockCanvasAndPost(canvas);
 
@@ -185,6 +273,7 @@ class GameCanvasView extends SurfaceView implements Runnable {
     @Override
     public void run() {
         while (isGamePlaying){
+            update();
             draw();
             controlFPS();
         }

@@ -1,10 +1,12 @@
-package ca.georgebrown.game2011.arcadegame;
+package ca.georgebrown.game2011.arcadegame.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+
+import ca.georgebrown.game2011.arcadegame.R;
 
 public class MainActivity extends Activity {
 
