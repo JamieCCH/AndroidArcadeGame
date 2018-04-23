@@ -450,6 +450,24 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
             }
 
+            if (x > bombButton.getIconRect().left
+                    && x < bombButton.getIconRect().right
+                    && y > bombButton.getIconRect().top
+                    && y < bombButton.getIconRect().bottom
+                    && bombsLeft > 0){
+
+                bombsLeft--;
+                enemies = new ArrayList<>();
+                int lastIndex = bombsLeftIcons.size()-1;
+                bombsLeftIcons.remove(lastIndex);
+
+                if (bombsLeft <= 0){
+                    Bitmap noBombsLeftIcon = BitmapFactory.decodeResource(getResources(),R.mipmap.button_bomb_empty);
+                    bombButton.setIconImage(noBombsLeftIcon);
+                }
+
+            }
+
             return true;
         }
 
