@@ -6,14 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -50,9 +49,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     int livesLeft = 3;
     int bombsLeft = 5;
-    int bulletShootInterval = 3;
-
-    boolean canPlayerShoot = false;
+    int bulletShootInterval = 1;
 
     ArrayList<Sprite> lifeLeftIcons = new ArrayList<>();
     ArrayList<Sprite> bombsLeftIcons = new ArrayList<>();
@@ -165,14 +162,31 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     }
 
-    private Bullet generateBullet() {
+    private Bullet[] generateBullets() {
 
-        Bullet result;
+        Bullet[] result = new Bullet[4];
 
         Bitmap bulletBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.player_bullet_03);
-        Position bulletPosition = new Position(30,screenHeight/2);
 
-        result = new Bullet(bulletBMP,bulletPosition,25,40);
+        Rect minionRect = player.getTopMinionRect();
+
+        Position bulletPosition = new Position(minionRect.left,minionRect.top);
+        result[0] = new Bullet(bulletBMP,bulletPosition,25,40);
+
+        minionRect = player.getBottomMinionRect();
+
+        bulletPosition = new Position(minionRect.left,minionRect.top);
+        result[1] = new Bullet(bulletBMP,bulletPosition,25,40);
+
+        minionRect = player.getTopMinionRect();
+
+        bulletPosition = new Position(minionRect.left+player.playerWidth,minionRect.top + 50);
+        result[2] = new Bullet(bulletBMP,bulletPosition,25,40);
+
+        minionRect = player.getBottomMinionRect();
+
+        bulletPosition = new Position(minionRect.left+player.playerWidth,minionRect.top - 50);
+        result[3] = new Bullet(bulletBMP,bulletPosition,25,40);
 
         return result;
     }
@@ -204,9 +218,12 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
 
             if (!isBulletAlreadyOnScreen(timeDelta)){
-                Bullet bullet = generateBullet();
-                bullet.bulletId = timeDelta;
-                bullets.add(bullet);
+                Bullet[] bulletsArray = generateBullets();
+                for(Bullet bullet : bulletsArray){
+                    bullet.bulletId = timeDelta;
+                    bullets.add(bullet);
+                }
+
             }
 
         }

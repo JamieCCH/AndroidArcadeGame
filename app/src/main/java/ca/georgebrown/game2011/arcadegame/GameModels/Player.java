@@ -81,5 +81,11 @@ public class Player {
         canvas.drawBitmap(playerMinionImage, null, bottomMinionRect, null);
     }
 
+    public Rect getTopMinionRect() {
+        return topMinionRect;
+    }
 
+    public Rect getBottomMinionRect() {
+        return bottomMinionRect;
+    }
 }
