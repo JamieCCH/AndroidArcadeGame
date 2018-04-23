@@ -21,8 +21,10 @@
         <activity
             android:name=".Activities.GamePlayActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".Activities.Tutorial" />
-        <activity android:name=".Activities.Credit"></activity>
+        <activity android:name=".Activities.Tutorial"
+            android:screenOrientation="landscape"/>
+        <activity android:name=".Activities.Credit"
+            android:screenOrientation="landscape"/>
     </application>
 
 </manifest>

@@ -15,12 +15,12 @@ public class Tutorial extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutorial);
 
-        ImageButton play = findViewById(R.id.startButton);
-        play.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                startPlay();
-            }
-        });
+//        ImageButton play = findViewById(R.id.startButton);
+//        play.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                startPlay();
+//            }
+//        });
 
         ImageButton back = findViewById(R.id.backButton);
         back.setOnClickListener(new View.OnClickListener() {
@@ -29,17 +29,16 @@ public class Tutorial extends Activity {
             }
         });
     }
-
-    private void startPlay() {
-
-        Intent intent = new Intent(this, GamePlayActivity.class);
-        startActivity(intent);
-    }
+//
+//    private void startPlay() {
+//
+//        Intent intent = new Intent(this, GamePlayActivity.class);
+//        startActivity(intent);
+//    }
 
     private void menu() {
 
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+        onBackPressed();
     }
 
 }
