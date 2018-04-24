@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal">
-
+    android:layout_height="match_parent">
+    
     <ca.georgebrown.game2011.arcadegame.GameView.GameCanvasView
         android:id="@+id/gameCanvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#00000000"/>
+    
+    <LinearLayout
+        android:id="@+id/pause_menu_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="100dp"
+        android:background="@color/colorPrimary">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:text="Resume Game"
+            android:fontFamily="@font/anabelle"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="120sp"
+            android:textColor="@color/white"
+            android:layout_weight="1"/>
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:src="@mipmap/button_startgame"
+            android:layout_weight="1"
+            android:background="#00000000"
+            android:padding="30dp"
+            android:scaleType="fitCenter"
+            android:onClick="onResumeGameButtonClicked"/>
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     int enemySpeedBoost = 0;
     int score = 0;
     int bossHealthHUDWidth;
+
+    public LinearLayout pauseMenuView;
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
@@ -594,6 +597,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
                     && y < pauseButton.getIconRect().bottom){
 
                 if(isGamePlaying) {
+                    pauseMenuView.setVisibility(VISIBLE);
                     pause();
                 }else{
                     resume();
