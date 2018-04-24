@@ -10,9 +10,9 @@ import android.graphics.Rect;
 
 public class Enemy {
 
-    private Position enemyPosition;
-    private Bitmap enemyImage;
-    private Rect enemyRect;
+    protected Position enemyPosition;
+    protected Bitmap enemyImage;
+    protected Rect enemyRect;
 
     public int enemyHeight = 120;
     public int enemyWidth = 150;
@@ -26,7 +26,7 @@ public class Enemy {
 
     }
 
-    private void setEnemyRect() {
+    protected void setEnemyRect() {
         int playerLeft = enemyPosition.getLeftPosition();
         int playerTop = enemyPosition.getTopPosition();
         int playerRight = playerLeft + enemyWidth;

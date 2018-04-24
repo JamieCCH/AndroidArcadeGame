@@ -24,6 +24,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import ca.georgebrown.game2011.arcadegame.Activities.GameFinishedActivity;
+import ca.georgebrown.game2011.arcadegame.GameModels.BossEnemy;
 import ca.georgebrown.game2011.arcadegame.GameModels.Bullet;
 import ca.georgebrown.game2011.arcadegame.GameModels.Enemy;
 import ca.georgebrown.game2011.arcadegame.GameModels.Player;
@@ -40,14 +41,16 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     Thread ourThread = null;
     SurfaceHolder ourHolder;
     boolean isGamePlaying;
+    boolean isBossOnScreen = false;
 
     long lastFrameTime;
     long lastUpdateTime;
     int fps;
 
     private Canvas canvas;
-    private Sprite background, scoreBgr, timerBgr, timerOverlay, bombButton, pauseButton;
+    private Sprite background, scoreBgr, timerBgr, timerOverlay, bombButton, pauseButton, bossHealthBgr, bossHealthOverlay;
     private Player player;
+    private BossEnemy bossEnemy;
 
 
     private int screenWidth;
@@ -58,6 +61,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     int bombsLeft = 5;
     int bulletShootInterval = 1;
 
+    int currentTimeOverlayRight;
+
     ArrayList<Sprite> lifeLeftIcons = new ArrayList<>();
     ArrayList<Sprite> bombsLeftIcons = new ArrayList<>();
 
@@ -66,21 +71,25 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     int enemySpeedBoost = 0;
     int score = 0;
+    int bossHealthHUDWidth;
 
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
+        initializeScreenMeasurements();
+        currentTimeOverlayRight = screenWidth - 20;
         setupGameCanvasView();
     }
 
     public GameCanvasView(Context context){
         super(context);
+        initializeScreenMeasurements();
+        currentTimeOverlayRight = screenWidth - 20;
         setupGameCanvasView();
     }
 
     private void setupGameCanvasView() {
 
         ourHolder = getHolder();
-        initializeScreenMeasurements();
         initializeHUDElementsVariables();
         setupPlayer();
 
@@ -115,7 +124,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         timerBgr = new Sprite(timerBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
 
         Bitmap timerOverlayBgrBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_timer_overlay);
-        timerOverlay = new Sprite(timerOverlayBgrBMP,timerPosition,hudAreaHeight/3 - 20,3*screenWidth/4 - 40);
+        timerOverlay = new Sprite(timerOverlayBgrBMP,timerPosition,hudAreaHeight/3 - 20,currentTimeOverlayRight - timerPosition.getLeftPosition());
+
 
 
         //Layer 2 HUD Elements
@@ -136,6 +146,15 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             Sprite bombIcon = new Sprite(bombFullBMP,bombIconPosition,bombIconWidthHeight,bombIconWidthHeight);
             bombsLeftIcons.add(bombIcon);
         }
+
+        Bitmap bossHealthBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_boss);
+        int bossPositionLeft = bombsLeftIcons.get(bombsLeftIcons.size()-1).getIconPosition().getLeftPosition() + 20;
+        Position bossHUDPosition = new Position(bossPositionLeft,hudAreaHeight/3);
+        bossHealthHUDWidth = screenWidth - 20 - bossPositionLeft;
+        bossHealthBgr = new Sprite(bossHealthBMP,bossHUDPosition,hudAreaHeight/3 - 20,bossHealthHUDWidth);
+
+        Bitmap bossHealthOverlayBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.hud_boss_overlay);
+        bossHealthOverlay = new Sprite(bossHealthOverlayBMP,bossHUDPosition,hudAreaHeight/3 - 20,bossHealthHUDWidth);
 
         //Layer 3 HUD Elements
         Bitmap pauseButtonBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.button_pause);
@@ -265,15 +284,28 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     int enemyGap = 0;
     private void update(){
 
-        timerOverlay.getIconRect().right -= 2;
-        if(timerOverlay.getIconRect().right <= timerOverlay.getIconRect().left && isGamePlaying){
-            isGamePlaying = false;
-            Intent gameFinishedIntent = new Intent(getContext(), GameFinishedActivity.class);
-            gameFinishedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            gameFinishedIntent.putExtra("didWin",true);
-            gameFinishedIntent.putExtra("score",Integer.toString(score));
-            getContext().startActivity(gameFinishedIntent);
+        //Decrease time overlay
+        timerOverlay.getIconRect().right -= 5;
+        currentTimeOverlayRight = timerOverlay.getIconRect().right;
+        //
+        if(timerOverlay.getIconRect().right <= timerOverlay.getIconRect().left && !isBossOnScreen){
+            isBossOnScreen = true;
+            Bitmap bossEnemyBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.enemy_boss);
+            Position bossSpawnPoint = new Position(screenWidth,screenHeight/2);
+            bossEnemy = new BossEnemy(bossEnemyBMP,bossSpawnPoint);
             return;
+        }
+
+        if(bossEnemy != null && bossHealthOverlay.getIconRect().right <= bossHealthOverlay.getIconRect().left){
+            score += 200;
+            launchGameFinishedActivityForWin(true);
+        }
+
+        if(bossEnemy != null){
+            bossEnemy.moveEnemy();
+            if (bossEnemy.getEnemyRect().left <= 0){
+                launchGameFinishedActivityForWin(false);
+            }
         }
 
         Date date = new Date();
@@ -367,10 +399,19 @@ public class GameCanvasView extends SurfaceView implements Runnable {
                 enemy.drawEnemyOnCanvas(canvas);
             }
 
+            if (bossEnemy != null){
+                bossHealthBgr.drawIconOnCanvas(canvas);
+                bossHealthOverlay.drawIconOnCanvas(canvas);
+            }
+
             Paint paint = new Paint();
             paint.setColor(Color.WHITE);
             paint.setTextSize(40);
             canvas.drawText(Integer.toString(score), 100, scoreBgr.getIconRect().bottom - 20, paint);
+
+            if (bossEnemy!= null){
+                bossEnemy.drawEnemyOnCanvas(canvas);
+            }
 
             ourHolder.unlockCanvasAndPost(canvas);
 
@@ -419,6 +460,27 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             }
         }
 
+        //Check Collision with boss Enemy
+
+        if (bossEnemy != null){
+            int left = player.getPlayerRect().left;
+            int top = player.getPlayerRect().top;
+            int right = player.getPlayerRect().right;
+            int bottom = player.getPlayerRect().bottom;
+
+            if ((left > bossEnemy.getEnemyRect().left
+                    && left < bossEnemy.getEnemyRect().right
+                    && top > bossEnemy.getEnemyRect().top
+                    && top < bossEnemy.getEnemyRect().bottom)
+                    || (right > bossEnemy.getEnemyRect().left
+                    && right < bossEnemy.getEnemyRect().right
+                    && bottom > bossEnemy.getEnemyRect().top
+                    && bottom < bossEnemy.getEnemyRect().bottom)){
+
+                takeLife();
+            }
+        }
+
     }
 
     private void checkBulletCollisionWithEnemies(){
@@ -428,6 +490,29 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             Bullet bullet = iterator.next();
 
             boolean shouldRemoveBullet = false;
+
+
+            //Delete bullet if collided with boss.
+            if(bossEnemy != null){
+
+                int left = bullet.getIconRect().left;
+                int top = bullet.getIconRect().top;
+
+                if (left > bossEnemy.getEnemyRect().left
+                        && left < bossEnemy.getEnemyRect().right
+                        && top > bossEnemy.getEnemyRect().top
+                        && top < bossEnemy.getEnemyRect().bottom){
+
+                    bossEnemy.health -= 20;
+
+                    int bossOverlayWidthDecrease = (bossHealthOverlay.getIconRect().left+bossHealthHUDWidth)/50;
+                    bossHealthOverlay.getIconRect().right -= bossOverlayWidthDecrease;
+
+                    iterator.remove();
+                    break;
+                }
+            }
+
             for (Iterator<Enemy> enemyIterator = enemies.iterator(); enemyIterator.hasNext(); ) {
                 Enemy enemy = enemyIterator.next();
 
@@ -491,11 +576,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             resetGame();
         }
         else{
-            Intent gameFinishedIntent = new Intent(getContext(), GameFinishedActivity.class);
-            gameFinishedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            gameFinishedIntent.putExtra("didWin",false);
-            gameFinishedIntent.putExtra("score",Integer.toString(score));
-            getContext().startActivity(gameFinishedIntent);
+            launchGameFinishedActivityForWin(false);
         }
     }
 
@@ -573,7 +654,17 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         enemies = new ArrayList<>();
         lifeLeftIcons = new ArrayList<>();
         bombsLeftIcons = new ArrayList<>();
+        bossEnemy = null;
+        isBossOnScreen = false;
         setupGameCanvasView();
+    }
+
+    private void launchGameFinishedActivityForWin(Boolean didWin){
+        Intent gameFinishedIntent = new Intent(getContext(), GameFinishedActivity.class);
+        gameFinishedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        gameFinishedIntent.putExtra("didWin",didWin);
+        gameFinishedIntent.putExtra("score",Integer.toString(score));
+        getContext().startActivity(gameFinishedIntent);
     }
 
 
