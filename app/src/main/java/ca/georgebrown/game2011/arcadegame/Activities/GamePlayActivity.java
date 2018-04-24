@@ -34,6 +34,10 @@ public class GamePlayActivity extends Activity {
         gameCanvas.resume();
     }
 
+    public void onExitGameButtonClicked(View view){
+        finish();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -44,5 +48,11 @@ public class GamePlayActivity extends Activity {
     protected void onResume() {
         super.onResume();
         gameCanvas.resume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }
