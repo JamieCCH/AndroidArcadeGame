@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,6 +23,8 @@ public class GameFinishedActivity extends Activity {
         Boolean didPlayerWon = intentExtras.getBoolean("didWin",false);
         String score = intentExtras.getString("score","--");
 
+
+        //Set background according to game win/lose status
         ImageView gameFinishedImageView = findViewById(R.id.game_finished_image_view);
         Bitmap imageBMP;
         if(didPlayerWon){
@@ -32,7 +35,10 @@ public class GameFinishedActivity extends Activity {
 
         gameFinishedImageView.setImageBitmap(imageBMP);
 
+        //Set score on score textview
         TextView scoreTextView = findViewById(R.id.score_text_view);
+        Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/anabelle_script_light.otf");
+        scoreTextView.setTypeface(tf);
         scoreTextView.setText(score);
     }
 

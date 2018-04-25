@@ -16,10 +16,18 @@ public class Bullet extends Sprite {
         super(iconImage, iconPosition, iconHeight, iconWidth);
     }
 
-    public void moveForward(){
+    public void moveLeftToRight(){
         int left = iconRect.left+bulletSpeed;
         int top = iconRect.top;
         int right = iconRect.right+bulletSpeed;
+        int bottom = iconRect.bottom;
+        this.iconRect = new Rect(left,top,right,bottom);
+    }
+
+    public void moveRightToLeft(){
+        int left = iconRect.left-bulletSpeed;
+        int top = iconRect.top;
+        int right = iconRect.right-bulletSpeed;
         int bottom = iconRect.bottom;
         this.iconRect = new Rect(left,top,right,bottom);
     }

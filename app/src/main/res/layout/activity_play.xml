@@ -15,17 +15,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_margin="100dp"
+        android:layout_margin="80dp"
         android:background="@color/colorPrimary">
 
         <TextView
+            android:id="@+id/game_pause_text"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:text="Game Paused"
             android:fontFamily="@font/anabelle"
             android:layout_gravity="center"
             android:gravity="center"
-            android:textSize="120sp"
+            android:textSize="100sp"
             android:textColor="@color/white"
             android:layout_weight="1"/>
 

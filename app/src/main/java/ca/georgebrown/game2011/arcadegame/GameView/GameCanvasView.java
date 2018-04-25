@@ -16,11 +16,11 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -69,6 +69,8 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     ArrayList<Bullet> bullets = new ArrayList<>();
     ArrayList<Enemy> enemies = new ArrayList<>();
+
+    ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
     int enemySpeedBoost = 0;
     int score = 0;
@@ -202,7 +204,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
         boolean result = false;
 
-        if(bullet.getIconRect().left > screenWidth){
+        if(bullet.getIconRect().left > screenWidth || bullet.getIconRect().right <= 0){
             result = true;
         }
 
@@ -263,8 +265,24 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         bulletPosition = new Position(minionRect.left+player.playerWidth,minionRect.top - 50);
         result[3] = new Bullet(bulletBMP,bulletPosition,25,40);
 
-//        result[2].bulletSpeed = 30;
-//        result[3].bulletSpeed = 30;
+        return result;
+    }
+
+    private Bullet generateEnemyBullet() {
+
+        Bullet result;
+
+        Bitmap bulletBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.enemy_bullet_09);
+
+        Rect bossEnemyRect = bossEnemy.getEnemyRect();
+
+        Random rand = new Random();
+        int upperBound = (screenHeight - player.playerHeight);
+        int lowerBound = hudAreaHeight + player.topMinionHeight + 20;
+        int randomBulletPosition = lowerBound + rand.nextInt(upperBound);
+
+        Position bulletPosition = new Position(bossEnemyRect.left,randomBulletPosition);
+        result = new Bullet(bulletBMP,bulletPosition,35,50);
 
         return result;
     }
@@ -274,7 +292,22 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         boolean result = false;
 
         for(Bullet bullet : bullets){
-            if (bullet.bulletId == bulletId){
+            if (bullet.bulletId.equals(bulletId)){
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+
+    }
+
+    private boolean isEnemyBulletAlreadyOnScreen(String bulletId){
+
+        boolean result = false;
+
+        for(Bullet bullet : enemyBullets){
+            if (bullet.bulletId.equals(bulletId)){
                 result = true;
                 break;
             }
@@ -285,16 +318,17 @@ public class GameCanvasView extends SurfaceView implements Runnable {
     }
     int bulletGap = 0;
     int enemyGap = 0;
+    int timeDecrement = 3;
     private void update(){
 
         //Decrease time overlay
-        timerOverlay.getIconRect().right -= 5;
+        timerOverlay.getIconRect().right -= timeDecrement;
         currentTimeOverlayRight = timerOverlay.getIconRect().right;
         //
         if(timerOverlay.getIconRect().right <= timerOverlay.getIconRect().left && !isBossOnScreen){
             isBossOnScreen = true;
             Bitmap bossEnemyBMP = BitmapFactory.decodeResource(getResources(),R.mipmap.enemy_boss);
-            Position bossSpawnPoint = new Position(screenWidth,screenHeight/2);
+            Position bossSpawnPoint = new Position(screenWidth,screenHeight/2 - 250);
             bossEnemy = new BossEnemy(bossEnemyBMP,bossSpawnPoint);
             return;
         }
@@ -325,49 +359,80 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
         //Generate bullets every few milliseconds
         if (timeDelta % bulletShootInterval == 0 && bulletGap % 10 == 0){
+            shootPlayerBulletsForId(timeDelta);
+        }
 
-
-            if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta))){
-                Bullet[] bulletsArray = generateBullets();
-                for(Bullet bullet : bulletsArray){
-                    bullet.bulletId = Integer.toString(timeDelta);
-                    bullets.add(bullet);
-                }
-
-            }
-            else if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta)+Integer.toString(bulletGap))){
-                Bullet[] bulletsArray = generateBullets();
-                for(Bullet bullet : bulletsArray){
-                    bullet.bulletId = Integer.toString(timeDelta)+Integer.toString(bulletGap);
-                    bullets.add(bullet);
-                }
-
-            }
-
+        //Generate boss bullets
+        if (bossEnemy != null && timeDelta % bulletShootInterval == 0 && bulletGap % 10 == 0){
+            shootBossBulletsForId(timeDelta);
         }
 
         enemyGap += 3;
-        if (timeDelta % 2 == 0 && enemyGap % 4 == 0){
+        if (bossEnemy== null && timeDelta % 2 == 0 && enemyGap % 4 == 0){
             generateEnemyRandomly();
         }
 
         //Move Bullets
         for (Iterator<Bullet> iterator = bullets.iterator(); iterator.hasNext(); ) {
             Bullet bullet = iterator.next();
-            bullet.moveForward();
+            bullet.moveLeftToRight();
             if (isBulletOutsideTheScreen(bullet)){
                 iterator.remove();
             }
         }
 
         //Move Enemies
-
         for (Iterator<Enemy> iterator = enemies.iterator(); iterator.hasNext(); ) {
             Enemy enemy = iterator.next();
             enemy.moveEnemy();
             if (isEnemyOutsideTheScreen(enemy)){
                 iterator.remove();
             }
+        }
+
+        //Move Boss Bullets
+        for (Iterator<Bullet> iterator = enemyBullets.iterator(); iterator.hasNext(); ) {
+            Bullet bullet = iterator.next();
+            bullet.moveRightToLeft();
+            if (isBulletOutsideTheScreen(bullet)){
+                iterator.remove();
+            }
+        }
+
+    }
+
+    private void shootPlayerBulletsForId(int timeDelta) {
+
+        if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta))){
+            Bullet[] bulletsArray = generateBullets();
+            for(Bullet bullet : bulletsArray){
+                bullet.bulletId = Integer.toString(timeDelta);
+                bullets.add(bullet);
+            }
+
+        }
+        else if (!isBulletAlreadyOnScreen(Integer.toString(timeDelta)+Integer.toString(bulletGap))){
+            Bullet[] bulletsArray = generateBullets();
+            for(Bullet bullet : bulletsArray){
+                bullet.bulletId = Integer.toString(timeDelta)+Integer.toString(bulletGap);
+                bullets.add(bullet);
+            }
+
+        }
+
+    }
+
+    private void shootBossBulletsForId(int timeDelta) {
+
+        if (!isEnemyBulletAlreadyOnScreen(Integer.toString(timeDelta))){
+            Bullet bullet = generateEnemyBullet();
+            bullet.bulletId = Integer.toString(timeDelta);
+            enemyBullets.add(bullet);
+        }
+        else if (!isEnemyBulletAlreadyOnScreen(Integer.toString(timeDelta)+Integer.toString(bulletGap))){
+            Bullet bullet = generateEnemyBullet();
+            bullet.bulletId = Integer.toString(timeDelta);
+            enemyBullets.add(bullet);
         }
 
     }
@@ -405,6 +470,10 @@ public class GameCanvasView extends SurfaceView implements Runnable {
             if (bossEnemy != null){
                 bossHealthBgr.drawIconOnCanvas(canvas);
                 bossHealthOverlay.drawIconOnCanvas(canvas);
+            }
+
+            for (Bullet bullet : enemyBullets){
+                bullet.drawIconOnCanvas(canvas);
             }
 
             Paint paint = new Paint();
@@ -464,7 +533,6 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         }
 
         //Check Collision with boss Enemy
-
         if (bossEnemy != null){
             int left = player.getPlayerRect().left;
             int top = player.getPlayerRect().top;
@@ -506,9 +574,9 @@ public class GameCanvasView extends SurfaceView implements Runnable {
                         && top > bossEnemy.getEnemyRect().top
                         && top < bossEnemy.getEnemyRect().bottom){
 
-                    bossEnemy.health -= 20;
+                    bossEnemy.health -= 10;
 
-                    int bossOverlayWidthDecrease = (bossHealthOverlay.getIconRect().left+bossHealthHUDWidth)/50;
+                    int bossOverlayWidthDecrease = (bossHealthOverlay.getIconRect().left+bossHealthHUDWidth)/100;
                     bossHealthOverlay.getIconRect().right -= bossOverlayWidthDecrease;
 
                     iterator.remove();
@@ -546,11 +614,37 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     }
 
+    private void checkBulletCollisionWithPlayer(){
+
+        for (Iterator<Bullet> iterator = enemyBullets.iterator(); iterator.hasNext(); ) {
+
+            Bullet bullet = iterator.next();
+
+            int left = bullet.getIconRect().left;
+            int top = bullet.getIconRect().top;
+
+            if (left > player.getPlayerRect().left
+                    && left < player.getPlayerRect().right
+                    && top > player.getPlayerRect().top
+                    && top < player.getPlayerRect().bottom){
+
+                takeLife();
+                iterator.remove();
+                break;
+            }
+
+        }
+
+
+
+    }
+
     @Override
     public void run() {
         while (isGamePlaying){
             checkPlayerCollisionWithEnemies();
             checkBulletCollisionWithEnemies();
+            checkBulletCollisionWithPlayer();
             update();
             draw();
             controlFPS();
@@ -658,6 +752,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         enemies = new ArrayList<>();
         lifeLeftIcons = new ArrayList<>();
         bombsLeftIcons = new ArrayList<>();
+        enemyBullets = new ArrayList<>();
         bossEnemy = null;
         isBossOnScreen = false;
         setupGameCanvasView();
