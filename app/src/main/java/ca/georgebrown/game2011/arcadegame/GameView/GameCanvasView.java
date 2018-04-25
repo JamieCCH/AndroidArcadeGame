@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -78,10 +79,16 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     public LinearLayout pauseMenuView;
 
+    MediaPlayer mp;
+
+
     public GameCanvasView(Context context, AttributeSet attrs){
         super(context,attrs);
         initializeScreenMeasurements();
         currentTimeOverlayRight = screenWidth - 20;
+        mp = MediaPlayer.create(getContext(), R.raw.bg_music);
+        mp.start();
+        mp.setLooping(true);
         setupGameCanvasView();
     }
 
@@ -653,6 +660,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
 
     public void pause() {
         isGamePlaying = false;
+        mp.pause();
         try {
             ourThread.join();
         } catch (InterruptedException e) {
@@ -663,6 +671,7 @@ public class GameCanvasView extends SurfaceView implements Runnable {
         isGamePlaying = true;
         ourThread = new Thread(this);
         ourThread.start();
+        mp.start();
     }
 
     public void takeLife(){
